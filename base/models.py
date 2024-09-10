@@ -14,9 +14,12 @@ class Room(models.Model):
     host = models.ForeignKey(User, on_delete= models.SET_NULL, null=True)
     topic = models.ForeignKey(Topic, on_delete= models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
-    description = models.TextField(blank=True, max_length=400)
+    description = models.TextField(blank=True, max_length=10000)
     create_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-create_at','-updated_at']
     
     
     def __str__(self):

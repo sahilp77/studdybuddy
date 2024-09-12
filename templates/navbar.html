@@ -7,12 +7,26 @@
 </head>
 <body>
 <ul>
+    {%if request.user.is_authenticated %}
+    <h1>Hello {{request.user}}</h1>
+    {%endif%}
+</ul>
+
+
+<ul>
     <li><a href="">Home</a></li>
+    {%if request.user.is_authenticated %}
+    <li><a href="{% url 'logout' %}">Logout</a></li>
+    {% else %}
+    <li><a href="{% url 'login' %}">Login</a></li>
+    {% endif %}
 </ul>
     <form action="{% url 'home'%}" method="GET">
         <input type="text"name="q" placeholder="Search..." >
         <input type="submit" value="Search">
 
     </form>
+    
+
 </body>
 </html>

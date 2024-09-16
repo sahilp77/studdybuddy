@@ -14,12 +14,13 @@ class Room(models.Model):
     host = models.ForeignKey(User, on_delete= models.SET_NULL, null=True)
     topic = models.ForeignKey(Topic, on_delete= models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
+    participants = models.ManyToManyField(User, related_name='particioants', blank=True)
     description = models.TextField(blank=True, max_length=10000)
-    create_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['-create_at','-updated_at']
+        ordering = ['-created_at','-updated_at']
     
     
     def __str__(self):
@@ -33,5 +34,8 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        ordering = ['-created_at','-updated_at']
+    
     def __str__(self):
-        return f"{self.user.username}: {self.body[:20]}"
+        return f"{self.body[:20]}"

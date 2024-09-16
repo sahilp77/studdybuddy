@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Room, Topic
+from .models import Room, Topic, Message
 from .forms import RoomForm
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -171,16 +171,48 @@ def home(request):
     
     rooms_count = rooms.count()
     
-    context= {'rooms': rooms, 'topics': topics, 'rooms_count': rooms_count}
+    room_messages =Message.objects.filter(Q(room__topic__name__icontains = q))
+    
+    
+    
+    context= {'rooms': rooms, 'topics': topics, 'rooms_count': rooms_count, 'room_messages': room_messages}
     return render(request, 'base/home.html', context)
 
 def room(request, pk):
-    room = Room.objects.get(id=int(pk))
+    room = Room.objects.get(id=pk) 
+    room_messages = room.message_set.all()
     
-            
-    context = {'room': room }           
+    participants = room.participants.all()
+    participants_count = participants.count()
 
-    return render(request, 'base/room.html',context)
+    if request.method == 'POST':
+        message_body = request.POST.get('body')
+        
+        # Check if the message body is empty
+        if not message_body or message_body.strip() == '':
+            # Handle the empty message scenario
+            return HttpResponse("Message cannot be empty")
+        
+        message = Message.objects.create(
+            user=request.user,
+            room = room,
+            body= message_body
+
+        )
+        
+        room.participants.add(request.user)
+
+        return redirect('room', pk=room.id)
+
+    context={'room':room, 
+            'room_messages':room_messages,
+            'current_user': request.user,
+            'participants': participants,
+            'participants_count': participants_count
+            }
+    
+    return render(request, 'base/room.html', context)
+
 
 @login_required(login_url='login')
 def create_room(request):
@@ -231,4 +263,22 @@ def delete_room(request, pk):
     context = {'obj': room}
 
     return render(request, 'base/delete.html',context)
+
+@login_required(login_url='login')
+def delete_message(request, pk):
+    message = Message.objects.get(id=int(pk))
+    
+    if request.user != message.user:
+        return HttpResponse("You are not allowed to delete this message")
+    
+    if request.method == 'POST':
+        
+        message.delete()
+        return redirect('room', pk=message.room.id)
+        
+        
+        
+    
+    return render(request, 'base/delete.html', {'obj': message})
+
 
